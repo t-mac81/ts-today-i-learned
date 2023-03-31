@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import CategoryFilter from './components/CategoryFilter';
+import FactList from './components/FactList';
 import Header from './components/Header';
+import NewFactForm from './components/NewFactForm';
 import './style.css';
 import supabase from './supabase';
 
-type Categories =
+export type Categories =
   | 'all'
   | 'technology'
   | 'science'
@@ -14,7 +17,7 @@ type Categories =
   | 'history'
   | 'news';
 
-interface FactData {
+export interface FactData {
   id: number;
   text: string | null;
   source: string | null;
@@ -24,6 +27,10 @@ interface FactData {
   votesFalse: number | null;
   created_at: string | null;
 }
+
+const Loader = () => {
+  return <p className="message">Loading...</p>;
+};
 
 const App: React.FC = () => {
   const [showForm, setShowForm] = useState<boolean>(false);
@@ -54,6 +61,17 @@ const App: React.FC = () => {
   return (
     <>
       <Header showForm={showForm} setShowForm={setShowForm} />
+      {showForm ? (
+        <NewFactForm setFactData={setFactData} setShowForm={setShowForm} />
+      ) : null}
+      <main className="main">
+        <CategoryFilter setCurrentCategory={setCurrentCategory} />
+        {isLoading ? (
+          <Loader />
+        ) : (
+          <FactList factData={factData} setFactData={setFactData} />
+        )}
+      </main>
     </>
   );
 };
