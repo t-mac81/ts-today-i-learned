@@ -1,26 +1,61 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from 'react';
+import Header from './components/Header';
+import './style.css';
+import supabase from './supabase';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+type Categories =
+  | 'all'
+  | 'technology'
+  | 'science'
+  | 'finance'
+  | 'society'
+  | 'entertainment'
+  | 'health'
+  | 'history'
+  | 'news';
+
+interface FactData {
+  id: number;
+  text: string | null;
+  source: string | null;
+  category: string | null;
+  votesInteresting: number | null;
+  votesMindblowing: number | null;
+  votesFalse: number | null;
+  created_at: string | null;
 }
+
+const App: React.FC = () => {
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const [factData, setFactData] = useState<FactData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState<Categories>('all');
+
+  useEffect(() => {
+    const getData = async function () {
+      setIsLoading(true);
+
+      let query = supabase.from('facts').select('*');
+
+      if (currentCategory !== 'all')
+        query = query.eq('category', currentCategory);
+
+      let { data, error } = await query.order('votesInteresting', {
+        ascending: false,
+      });
+      console.log(data);
+      if (!error && data) setFactData(data);
+      else alert('There was a problem getting data...');
+      setIsLoading(false);
+    };
+    getData();
+  }, [currentCategory]);
+
+  return (
+    <>
+      <Header showForm={showForm} setShowForm={setShowForm} />
+    </>
+  );
+};
 
 export default App;
